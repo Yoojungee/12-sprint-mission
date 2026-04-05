@@ -6,7 +6,9 @@ import java.util.List;
 import java.util.UUID;
 
 public interface UserService {
-    User save(User user);
-    User findById(UUID id);
-    List<User> findAll();
+    User save(User user); // 등록
+    User findById(UUID id); // 조회(단건)
+    List<User> findAll(); // 조회(다건)
+    User update(User user); // 수정
+    void deleteByID(UUID id); // 삭제(단건)
 }

@@ -4,21 +4,21 @@ import java.util.UUID;
 
 public class User {
     private UUID id;
-    private String username;
-    private String email;
-    private String password;
-    private String nickname;
+    private String username; // 유저명(아이디)
+    private String email; // 이메일
+    private String password; // 패스워드
+    private String nickname; // 닉네임
     private Long createdAt;
     private Long updatedAt;
 
     public User(String username, String email, String password, String nickname) {
-        id = UUID.randomUUID();
+        this.id = UUID.randomUUID();
         this.username = username;
         this.email = email;
         this.password = password;
         this.nickname = nickname;
-        createdAt = System.currentTimeMillis();
-        updatedAt = System.currentTimeMillis();
+        this.createdAt = System.currentTimeMillis();
+        this.updatedAt = System.currentTimeMillis();
     }
 
     public UUID getId() {
@@ -49,13 +49,13 @@ public class User {
         return updatedAt;
     }
 
-
+    // 수정 update 함수
     public void update(String username, String email, String password, String nickname){
         this.username = username;
         this.email = email;
         this.password = password;
         this.nickname = nickname;
-        updatedAt = System.currentTimeMillis();
+        this.updatedAt = System.currentTimeMillis();
     }
 
     @Override
