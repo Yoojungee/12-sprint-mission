@@ -9,6 +9,6 @@ public interface ChannelService {
     Channel save(Channel channel); // 등록
     Channel findById(UUID id); // 조회(단건)
     List<Channel> findAll(); // 조회(다건)
-    Channel update(Channel channel); // 수정
-    void deleteById(UUID id); // 삭제(단건)
+    Channel update(Channel channel, UUID loginUserId); // 수정
+    void deleteById(UUID id, UUID loginUserId); // 삭제(단건)
 }

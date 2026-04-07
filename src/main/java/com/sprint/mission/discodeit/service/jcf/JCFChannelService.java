@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.service.ChannelService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 public class JCFChannelService implements ChannelService {
@@ -39,11 +40,15 @@ public class JCFChannelService implements ChannelService {
 
     // 수정
     @Override
-    public Channel update(Channel channel) {
+    public Channel update(Channel channel, UUID loginUserId) {
         Channel channelToUpdate = findById(channel.getId());
 
         if(channelToUpdate == null) {
-            return null;
+            throw new NoSuchElementException("수정할 채널이 없습니다!");
+        }
+
+        if(!channelToUpdate.getOwner().getId().equals(loginUserId)) {
+            throw new IllegalArgumentException("방장만 채널을 수정할 수 있습니다.");
         }
 
         channelToUpdate.update(
@@ -51,12 +56,23 @@ public class JCFChannelService implements ChannelService {
                 channel.getChannelType(),
                 channel.getDescription()
         );
+
         return channelToUpdate;
     }
 
     // 삭제(단건)
     @Override
-    public void deleteById(UUID id) {
-        data.removeIf(channel -> channel.getId().equals(id));
+    public void deleteById(UUID id, UUID loginUserId) {
+        Channel channelToDelete = findById(id);
+
+        if(channelToDelete == null) {
+            throw new NoSuchElementException("삭제할 채널이 없습니다!");
+        }
+
+        if(!channelToDelete.getOwner().getId().equals(loginUserId)) {
+            throw new IllegalArgumentException("방장만 채널을 삭제할 수 있습니다.");
+        }
+
+        data.remove(channelToDelete);
     }
 }

@@ -53,24 +53,23 @@ public class JavaApplication {
         Channel foundChan = channelService.findById(myChan.getId());
         System.out.println("단건 조회 결과: [" + foundChan.getChannelName() + "] UUID: " + foundChan.getId());
 
-        // [3] 1:1 DM(Message) 전송
+        // DM(Message) 전송
         System.out.println("\n[3] DM(Message) 보내기");
-        User friend = new User("friend1", "friend@test.com", "pass", "친구");
-        userService.save(friend);
+        User friend = new User("friend1", "friend@test.com", "pass", "친구");;
 
         System.out.print(friend.getNickname() + "님에게 보낼 메시지: ");
         String content = scanner.nextLine();
-        Message dm = new Message(me, null, content);
+        Message dm = new Message(me, friend, null, content);
         messageService.save(dm);
         System.out.println("메시지 전송 완료!");
-        System.out.println("보낸 사람: " + dm.getSendUser().getNickname());
+        System.out.println("보낸 사람: " + dm.getAuthorId().getNickname());
         System.out.println("전송 시간: " + sdf.format(new Date(dm.getCreatedAt())));
 
         // [4] 수정 테스트 (채널 이름 수정)
         System.out.println("\n[4] 채널 정보 수정 테스트");
         System.out.print("변경할 채널 이름: "); String newChanName = scanner.nextLine();
         myChan.update(newChanName, myChan.getChannelType(), "수정된 설명입니다.");
-        channelService.update(myChan);
+        channelService.update(myChan, me.getId());
 
         Channel updated = channelService.findById(myChan.getId());
         System.out.println("수정 후 이름: " + updated.getChannelName());
@@ -81,15 +80,19 @@ public class JavaApplication {
         // 채널 단건 삭제
         System.out.print("방금 만든 채널을 삭제하시겠습니까? (y/n): ");
         if (scanner.nextLine().equalsIgnoreCase("y")) {
-            channelService.deleteById(myChan.getId());
+            channelService.deleteById(myChan.getId(), me.getId());
             System.out.println("채널 단건 삭제 완료!");
         }
 
         // 메시지 단건 삭제
         System.out.print("보낸 메시지를 단건 삭제하시겠습니까? (y/n): ");
         if (scanner.nextLine().equalsIgnoreCase("y")) {
-            messageService.deleteByID(dm.getId());
-            System.out.println("메시지 단건 삭제 완료!");
+            try {
+                messageService.deleteByID(dm.getId(), me.getId());
+                System.out.println("메시지 단건 삭제 완료!");
+            } catch (Exception e) {
+                System.out.println("삭제 중 에러 발생: " + e.getMessage());
+            }
         }
 
         // 메시지 다건 삭제
@@ -100,10 +103,10 @@ public class JavaApplication {
         }
 
         // 유저 삭제(탈퇴)
-        System.out.print("내 계정(" + me.getNickname() + ")을 삭제(탈퇴)하시겠습니까? (y/n): ");
+        System.out.print("내 계정(" + me.getUsername() + ")을 삭제(탈퇴)하시겠습니까? (y/n): ");
         if (scanner.nextLine().equalsIgnoreCase("y")) {
-            userService.deleteByID(me.getId());
-            System.out.println("유저 단건 삭제(탈퇴) 완료!");
+            userService.deleteByID(me.getId(), me.getId());
+            System.out.println("내 계정 삭제(탈퇴) 완료!");
         }
 
         // [6] 최종 결과 확인

@@ -21,6 +21,7 @@ public class Channel {
         this.description = description;
         this.owner = owner;
         this.members = new ArrayList<>();
+        this.members.add(owner);
         this.createdAt = System.currentTimeMillis();
         this.updatedAt = System.currentTimeMillis();
     }

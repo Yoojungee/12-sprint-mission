@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.service.MessageService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 public class JCFMessageService implements MessageService {
@@ -39,11 +40,15 @@ public class JCFMessageService implements MessageService {
 
     // 수정
     @Override
-    public Message update(Message message) {
+    public Message update(Message message, UUID loginUserId) {
         Message messageUpdate = findById(message.getId());
 
         if(messageUpdate == null) {
-            return null;
+            throw new NoSuchElementException("수정할 메세지가 없습니다!");
+        }
+
+        if(!messageUpdate.getId().equals(loginUserId)) {
+            throw new IllegalArgumentException("본인만 메세지를 수정할 수 있습니다.");
         }
 
         messageUpdate.update(message.getContent());
@@ -52,8 +57,18 @@ public class JCFMessageService implements MessageService {
 
     // 삭제(단건)
     @Override
-    public void deleteByID(UUID id) {
-        data.removeIf(message -> message.getId().equals(id));
+    public void deleteByID(UUID id, UUID loginUserId) {
+        Message messageToDelete = findById(id);
+
+        if(messageToDelete == null) {
+            throw new NoSuchElementException("삭제할 메세지가 없습니다!");
+        }
+
+        if(!messageToDelete.getAuthorId().getId().equals(loginUserId)) {
+            throw new IllegalArgumentException("본인만 메세지를 삭제할 수 있습니다.");
+        }
+
+        data.remove(messageToDelete);
     }
 
     // 삭제(다건)
