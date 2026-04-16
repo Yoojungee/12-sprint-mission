@@ -10,6 +10,6 @@ public interface MessageService {
     Message findById(UUID id); // 조회(단건)
     List<Message> findAll(); // 조회(다건)
     Message update(Message message, UUID loginUserId); // 수정
-    void deleteByID(UUID id, UUID loginUserId); // 삭제(단건)
+    void deleteById(UUID id, UUID loginUserId); // 삭제(단건)
     void deleteAll(); // 삭제(다건)
 }
