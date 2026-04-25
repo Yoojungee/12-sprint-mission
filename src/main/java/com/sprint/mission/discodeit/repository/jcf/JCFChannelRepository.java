@@ -2,51 +2,43 @@ package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf", matchIfMissing = true)
+@Repository
 public class JCFChannelRepository implements ChannelRepository {
-
     private final Map<UUID, Channel> data;
 
     public JCFChannelRepository() {
-        data = new HashMap<>();
+        this.data = new HashMap<>();
     }
 
-    // 등록
     @Override
     public Channel save(Channel channel) {
-        data.put(channel.getId(), channel);
+        this.data.put(channel.getId(), channel);
         return channel;
     }
 
-    // 조회(단건)
     @Override
     public Optional<Channel> findById(UUID id) {
-        return Optional.ofNullable(data.get(id));
+        return Optional.ofNullable(this.data.get(id));
     }
 
-    // 조회(다건)
     @Override
     public List<Channel> findAll() {
-        return new ArrayList<>(data.values());
+        return this.data.values().stream().toList();
     }
 
-    // 수정
-    @Override
-    public Channel update(Channel channel) {
-        return save(channel);
-    }
-
-    // 존재 여부
     @Override
     public boolean existsById(UUID id) {
-        return data.containsKey(id);
+        return this.data.containsKey(id);
     }
 
-    // 삭제(단건)
     @Override
     public void deleteById(UUID id) {
-        data.remove(id);
+        this.data.remove(id);
     }
 }

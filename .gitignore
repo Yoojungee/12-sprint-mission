@@ -178,5 +178,6 @@ gradle-app.setting
 ### Data Files ###
 *.data
 *.dat
+*.ser
 
 # End of https://www.toptal.com/developers/gitignore/api/windows,macos,gradle,intellij+all
