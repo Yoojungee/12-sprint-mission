@@ -1,67 +1,103 @@
-// API endpoints
-const API_BASE_URL = '/api';
-const ENDPOINTS = {
-    USERS: `${API_BASE_URL}/user/findAll`,
-    BINARY_CONTENT: `${API_BASE_URL}/binaryContent/find`
-};
-
-// Initialize the application
 document.addEventListener('DOMContentLoaded', () => {
-    fetchAndRenderUsers();
+    // 페이지 로드 시 유저 목록 불러오기
+    fetchUsers();
+
+    // 폼 제출 이벤트 리스너 추가
+    const form = document.getElementById('userForm');
+    if (form) {
+        form.addEventListener('submit', createUser);
+    }
 });
 
-// Fetch users from the API
-async function fetchAndRenderUsers() {
+// 1. 전체 사용자 목록 불러오기 (온라인 상태 추가 버전)
+async function fetchUsers() {
     try {
-        const response = await fetch(ENDPOINTS.USERS);
-        if (!response.ok) throw new Error('Failed to fetch users');
+        const response = await fetch('/api/user/findAll');
         const users = await response.json();
-        renderUserList(users);
+
+        const listContainer = document.getElementById('userList');
+        listContainer.innerHTML = '';
+
+        for (const user of users) {
+            const userDiv = document.createElement('div');
+            userDiv.className = 'user-item';
+
+            let imgHtml = '<div class="avatar-placeholder">이미지 없음</div>';
+
+            if (user.profileId) {
+                const imageUrl = await fetchProfileImage(user.profileId);
+                if (imageUrl) {
+                    imgHtml = `<img src="${imageUrl}" class="avatar" alt="profile">`;
+                }
+            }
+
+            // ⭐ 여기서 status-badge div를 다시 추가했어요!
+            userDiv.innerHTML = `
+                ${imgHtml} 
+                <div class="info">
+                    <div class="name">${user.username}</div>
+                    <div class="email">${user.email}</div>
+                </div>
+                <div class="status-badge">온라인</div>
+            `;
+            listContainer.appendChild(userDiv);
+        }
     } catch (error) {
-        console.error('Error fetching users:', error);
+        console.error('사용자 목록 불러오기 실패:', error);
     }
 }
 
-// Fetch user profile image
-async function fetchUserProfile(profileId) {
+// 2. 프로필 이미지 데이터 가져와서 변환하기
+async function fetchProfileImage(binaryContentId) {
     try {
-        const response = await fetch(`${ENDPOINTS.BINARY_CONTENT}?binaryContentId=${profileId}`);
-        if (!response.ok) throw new Error('Failed to fetch profile');
-        const profile = await response.json();
+        const response = await fetch(`/api/binaryContent/find?binaryContentId=${binaryContentId}`);
+        if (!response.ok) return null;
 
-        // Convert base64 encoded bytes to data URL
-        return `data:${profile.contentType};base64,${profile.bytes}`;
-    } catch (error) {
-        console.error('Error fetching profile:', error);
-        return '/default-avatar.png'; // Fallback to default avatar
+        const binaryContent = await response.json();
+
+        // ⭐ 핵심: 'bytes' 데이터가 문자열일 경우, 불필요한 모든 문자를 제거합니다.
+        // 데이터의 앞뒤 공백, 중간에 섞인 줄바꿈(\n, \r) 등을 모두 제거!
+        const base64String = binaryContent.bytes.replace(/[\r\n\s]+/g, '');
+
+        // 이제 깐깐한 atob도 통과할 수 있습니다.
+        const byteCharacters = atob(base64String);
+        const byteNumbers = new Array(byteCharacters.length);
+
+        for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+
+        const blob = new Blob([byteArray], { type: binaryContent.contentType });
+        return URL.createObjectURL(blob);
+    } catch (e) {
+        console.error("이미지 변환 실패! 에러 내용:", e);
+        return null;
     }
 }
 
-// Render user list
-async function renderUserList(users) {
-    const userListElement = document.getElementById('userList');
-    userListElement.innerHTML = ''; // Clear existing content
+// 3. 사용자 등록 (이미지 포함)
+async function createUser(event) {
+    event.preventDefault();
+    const form = event.target;
+    const formData = new FormData(form);
 
-    for (const user of users) {
-        const userElement = document.createElement('div');
-        userElement.className = 'user-item';
+    try {
+        const response = await fetch('/api/user/create', {
+            method: 'POST',
+            body: formData
+        });
 
-        // Get profile image URL
-        const profileUrl = user.profileId ?
-            await fetchUserProfile(user.profileId) :
-            '/default-avatar.png';
-
-        userElement.innerHTML = `
-            <img src="${profileUrl}" alt="${user.username}" class="user-avatar">
-            <div class="user-info">
-                <div class="user-name">${user.username}</div>
-                <div class="user-email">${user.email}</div>
-            </div>
-            <div class="status-badge ${user.online ? 'online' : 'offline'}">
-                ${user.online ? '온라인' : '오프라인'}
-            </div>
-        `;
-
-        userListElement.appendChild(userElement);
+        if (response.ok) {
+            alert("등록 성공!");
+            form.reset();
+            // 등록 직후 목록 새로고침
+            await fetchUsers();
+        } else {
+            const errorData = await response.json();
+            alert(`등록 실패: ${errorData.message || '알 수 없는 오류'}`);
+        }
+    } catch (error) {
+        console.error('등록 중 에러 발생:', error);
     }
 }

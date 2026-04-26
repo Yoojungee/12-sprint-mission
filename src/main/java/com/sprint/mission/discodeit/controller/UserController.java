@@ -22,7 +22,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api/user")
 @RequiredArgsConstructor
 public class UserController {
 
@@ -53,20 +53,6 @@ public class UserController {
 
         User createdUser = userService.create(userCreateRequest, profileRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
-    }
-
-    // 사용자 리스트 전체 조회
-    @RequestMapping(path = "/findAll", method = RequestMethod.GET)
-    public ResponseEntity<List<UserDto>> findAll() {
-        List<UserDto> users = userService.findAll();
-        return ResponseEntity.status(HttpStatus.OK).body(users);
-    }
-
-    // 사용자 단건 조회
-    @RequestMapping(path = "/{userId}", method = RequestMethod.GET)
-    public ResponseEntity<UserDto> find(@PathVariable UUID userId) {
-        UserDto user = userService.find(userId);
-        return ResponseEntity.status(HttpStatus.OK).body(user);
     }
 
     // 사용자 수정
@@ -101,6 +87,13 @@ public class UserController {
     public ResponseEntity<Void> delete(@PathVariable UUID userId) {
         userService.delete(userId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    // 사용자 리스트 전체 조회
+    @RequestMapping(path = "/findAll", method = RequestMethod.GET)
+    public ResponseEntity<List<UserDto>> findAll() {
+        List<UserDto> users = userService.findAll();
+        return ResponseEntity.status(HttpStatus.OK).body(users);
     }
 
     // 사용자의 온라인 상태 업데이트
