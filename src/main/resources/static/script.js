@@ -31,14 +31,20 @@ async function fetchUsers() {
                 }
             }
 
-            // ⭐ 여기서 status-badge div를 다시 추가했어요!
+            // user.online 값이 true면 "온라인", false면 "오프라인"
+            const isOnline = user.online;
+            const statusText = isOnline ? "온라인" : "오프라인";
+            const statusColor = isOnline ? "#28a745" : "#6c757d";
+
             userDiv.innerHTML = `
-                ${imgHtml} 
-                <div class="info">
-                    <div class="name">${user.username}</div>
-                    <div class="email">${user.email}</div>
+                 ${imgHtml} 
+                 <div class="info">
+                     <div class="name">${user.username}</div>
+                     <div class="email">${user.email}</div>
+                 </div>
+                <div class="status-badge" style="background-color: ${statusColor}">
+                    ${statusText}
                 </div>
-                <div class="status-badge">온라인</div>
             `;
             listContainer.appendChild(userDiv);
         }
@@ -54,12 +60,7 @@ async function fetchProfileImage(binaryContentId) {
         if (!response.ok) return null;
 
         const binaryContent = await response.json();
-
-        // ⭐ 핵심: 'bytes' 데이터가 문자열일 경우, 불필요한 모든 문자를 제거합니다.
-        // 데이터의 앞뒤 공백, 중간에 섞인 줄바꿈(\n, \r) 등을 모두 제거!
         const base64String = binaryContent.bytes.replace(/[\r\n\s]+/g, '');
-
-        // 이제 깐깐한 atob도 통과할 수 있습니다.
         const byteCharacters = atob(base64String);
         const byteNumbers = new Array(byteCharacters.length);
 
